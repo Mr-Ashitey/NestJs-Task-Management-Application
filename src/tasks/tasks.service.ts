@@ -13,7 +13,7 @@ export class TasksService {
   }
 
   // create a single task and return it
-  createTask(title: string, description: string): Task {
+  async createTask(title: string, description: string): Promise<Task> {
     const task: Task = {
       id: uuid(),
       title,
