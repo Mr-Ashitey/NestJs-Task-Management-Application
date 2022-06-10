@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { Task, TaskStatus } from './task.model';
 import { v4 as uuid } from 'uuid';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -15,13 +15,22 @@ export class TasksService {
 
   //   get a single task by id
   getTaskById(id: string): Task {
-    return this.tasks.find((task) => task.id === id);
+    const task = this.tasks.find((task) => task.id === id);
+    if (!task) {
+      throw new NotFoundException('Task with this id not found.');
+    }
+
+    return task;
   }
 
   // create a single task and return it
   async createTask(createTaskDto: CreateTaskDto): Promise<Task> {
-    console.log(createTaskDto);
     const { title, description } = createTaskDto;
+
+    if (!title || !description) {
+      throw new HttpException('All fields are required', 400);
+    }
+
     const task: Task = {
       id: uuid(),
       title,
