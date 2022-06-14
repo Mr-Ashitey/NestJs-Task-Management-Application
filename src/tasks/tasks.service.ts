@@ -47,9 +47,9 @@ export class TasksService {
   async createTask(createTaskDto: CreateTaskDto): Promise<Task> {
     const { title, description } = createTaskDto;
 
-    if (!title || !description) {
-      throw new HttpException('All fields are required', 400);
-    }
+    // if (!title || !description) {
+    //   throw new HttpException('All fields are required', 400);
+    // }
 
     const task: Task = {
       id: uuid(),
