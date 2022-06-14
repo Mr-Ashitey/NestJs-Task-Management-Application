@@ -2,6 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './task.entity';
 import { Repository } from 'typeorm';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { TaskStatus } from './task-status.enum';
+import { GetTaskFilterDto } from './dto/get-tasks-filter.dto';
 
 @Injectable()
 export class TasksService {
@@ -9,6 +12,27 @@ export class TasksService {
     @InjectRepository(Task)
     private tasksRepository: Repository<Task>,
   ) {}
+
+  // get all tasks
+  async getTasks(filterDto: GetTaskFilterDto): Promise<Task[]> {
+    const { status, search } = filterDto;
+
+    const query = this.tasksRepository.createQueryBuilder('task');
+
+    if (status) {
+      query.andWhere('task.status = :status', { status });
+    }
+    if (search) {
+      query.andWhere(
+        '(LOWER(task.title) LIKE LOWER(:search) OR LOWER(task.description) LIKE LOWER(:search))',
+        { search: `%${search}%` },
+      );
+    }
+
+    const tasks = await query.getMany();
+
+    return tasks;
+  }
 
   // find a task by id
   async getTaskById(id: string): Promise<Task> {
@@ -18,6 +42,40 @@ export class TasksService {
     }
 
     return task;
+  }
+
+  // create a new task
+  async createTask(createTaskDto: CreateTaskDto): Promise<Task> {
+    const { title, description } = createTaskDto;
+
+    const task = this.tasksRepository.create({
+      title,
+      description,
+      status: TaskStatus.OPEN,
+    });
+
+    await this.tasksRepository.save(task);
+
+    return task;
+  }
+
+  // update a task's status
+  async updateTaskStatus(id: string, status: TaskStatus): Promise<Task> {
+    const task = await this.getTaskById(id);
+
+    task.status = status;
+    await this.tasksRepository.save(task);
+
+    return task;
+  }
+
+  // delete a task
+  async deleteTask(id: string): Promise<void> {
+    const result = await this.tasksRepository.delete({ id: id });
+
+    if (result.affected === 0) {
+      throw new NotFoundException('Task with this id not found.');
+    }
   }
   // // an array of tasks
   // private tasks: Task[] = [];
