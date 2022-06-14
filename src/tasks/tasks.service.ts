@@ -1,4 +1,4 @@
-import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Task, TaskStatus } from './task.model';
 import { v4 as uuid } from 'uuid';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -47,10 +47,6 @@ export class TasksService {
   async createTask(createTaskDto: CreateTaskDto): Promise<Task> {
     const { title, description } = createTaskDto;
 
-    // if (!title || !description) {
-    //   throw new HttpException('All fields are required', 400);
-    // }
-
     const task: Task = {
       id: uuid(),
       title,
@@ -67,20 +63,16 @@ export class TasksService {
   updateTaskStatus(id: string, status: TaskStatus): Task {
     const task = this.getTaskById(id);
 
-    if (!task) {
-      throw new NotFoundException('Task with this id not found.');
-    }
-
     task.status = status;
     return task;
   }
 
   // delete a single task by id
   deleteTask(id: string): void {
-    const task = this.getTaskById(id);
-    if (!task) {
-      throw new NotFoundException('Task with this id not found.');
-    }
+    this.getTaskById(id); // do this so we can throw an error when id is not found
+    // if (!task) {
+    //   throw new NotFoundException('Task with this id not found.');
+    // }
 
     this.tasks = this.tasks.filter((task) => task.id !== id);
   }
