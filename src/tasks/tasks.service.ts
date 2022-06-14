@@ -70,9 +70,6 @@ export class TasksService {
   // delete a single task by id
   deleteTask(id: string): void {
     this.getTaskById(id); // do this so we can throw an error when id is not found
-    // if (!task) {
-    //   throw new NotFoundException('Task with this id not found.');
-    // }
 
     this.tasks = this.tasks.filter((task) => task.id !== id);
   }
