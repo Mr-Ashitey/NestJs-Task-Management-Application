@@ -15,10 +15,11 @@ export class TasksService {
   ) {}
 
   // get all tasks
-  async getTasks(filterDto: GetTaskFilterDto): Promise<Task[]> {
+  async getTasks(filterDto: GetTaskFilterDto, user: User): Promise<Task[]> {
     const { status, search } = filterDto;
 
     const query = this.tasksRepository.createQueryBuilder('task');
+    query.where({ user }); // give user tasks owned by current user
 
     if (status) {
       query.andWhere('task.status = :status', { status });
